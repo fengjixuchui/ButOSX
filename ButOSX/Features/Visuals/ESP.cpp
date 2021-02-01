@@ -6,8 +6,11 @@
 //  Copyright © 2021 VersteckteKrone. All rights reserved.
 //
 
-#include "ESP.hpp"
+//FULLY STOLEN RN I'M GONNE SWITCH TO THE IMGUI RENDER AND WRITE FROM SCRATH. THAT WAS FOR SHOWDOWN! 28.01.2021
+
+#include "Visuals.hpp"
 #include "CheatSettings.h"
+#include "imgui.h"
 
 bool CheatSettings::ESP;
 
@@ -64,7 +67,7 @@ void DrawString(int x, int y, Color color, HFONT font, bool bCenter, const char*
 void DrawHealthbar(int x, int y, int w, int h, int health, Color color) {
     
     if(health > 100)
-        health = 100; // Just a fix, tried without this on Zombie servers.. you don't wanna know what happend.
+        health = 100;
     
     int hw = h - ((h) * health) / 100;
     FillRGBA(x, y - 1, w, h + 2, Color(0, 0, 0, 120));
@@ -143,7 +146,7 @@ bool DrawPlayerBox(C_BaseEntity* pEntity, bBoxStyle& boxes) {
     return true;
 }
 
-auto TestTrace(C_BaseEntity* pEntity, C_BaseEntity* pLocal) -> bool { /* Just a simple visible check :^) */
+auto TestTrace(C_BaseEntity* pEntity, C_BaseEntity* pLocal) -> bool {
     Ray_t ray;
     trace_t trace;
     CTraceFilter filter;
@@ -156,57 +159,25 @@ auto TestTrace(C_BaseEntity* pEntity, C_BaseEntity* pLocal) -> bool { /* Just a 
 }
 
 void DrawSkeleton(C_BaseEntity* pEntity, Color color) {
-    studiohdr_t* pStudioModel = pModelInfo->GetStudioModel( pEntity->GetModel() );
-    if ( pStudioModel ) {
-        static matrix3x4_t pBoneToWorldOut[128];
-        if ( pEntity->SetupBones( pBoneToWorldOut, 128, 256, 0) )
-        {
-            for ( int i = 0; i < pStudioModel->numbones; i++ )
-            {
-                mstudiobone_t* pBone = pStudioModel->pBone( i );
-                if ( !pBone || !( pBone->flags & 256 ) || pBone->parent == -1 )
-                    continue;
-                
-                
-                Vector vBone1 = pEntity->GetBonePosition(i);
-                Vector vBoneOut1;
-                
-                Vector vBone2 = pEntity->GetBonePosition(pBone->parent);
-                Vector vBoneOut2;
-                
-                if(WorldToScreen(vBone1, vBoneOut1) && WorldToScreen(vBone2, vBoneOut2)) {
-                    DrawLine(vBoneOut1.x, vBoneOut1.y, vBoneOut2.x, vBoneOut2.y, color);
-                }
-            }
-        }
-    }
+    //TODO
 }
-/*
-*/
-extern void ESP() {
+
+void DrawSkeletonImGui(ImDrawList* drawArea, C_BaseEntity* pEntity, Color color){
+    
+}
+
+
+extern void Visuals::ESP::ESPSurface() {
     C_BaseEntity* pLocal = (C_BaseEntity*)pEntList->GetClientEntity(pEngine->GetLocalPlayer());
     for(int i = 0; i < pEntList->GetHighestEntityIndex(); i++) {
         C_BaseEntity* pEntity = (C_BaseEntity*)pEntList->GetClientEntity(i);
-        
-        if(!pEntity)
+        if(!pEntity || !pLocal || pEntity->GetHealth() < 1 || pEntity->GetTeam() == pLocal->GetTeam() || pEntity->IsDormant() || pEntity->IsGhost() || pEntity == pLocal)
             continue;
-        if(pEntity->GetHealth() < 1)
-            continue;
-        if(pEntity->GetTeam() == pLocal->GetTeam())
-            continue;
-        if(pEntity->IsDormant())
-            continue;
-        if(pEntity->IsGhost())
-            continue;
-        if(pEntity == pLocal)
-            continue;
-        
         bBoxStyle players;
         auto isVisible = TestTrace(pEntity, pLocal);
-        
         IEngineClient::player_info_t pInfo;
         pEngine->GetPlayerInfo(i, &pInfo);
-        if(CheatSettings::ESP)
+        if(CheatSettings::ESP){
             if(DrawPlayerBox(pEntity, players)) {
                 if(pEntity->GetTeam() == Terrorist) { // Draw box ESP on T
                     DrawBoxOutline(players.x, players.y, players.w, players.h, isVisible ? Color::Red() : Color::Yellow());
@@ -221,5 +192,33 @@ extern void ESP() {
                 /* Draws player name */
                 DrawString(players.x + players.w / 2, players.y - 12, Color::White(), eFont, true, pInfo.name);
             }
+        }
+    }
+}
+
+extern void Visuals::ESP::EspImGui(ImDrawList* drawArea){
+    C_BaseEntity* pLocal = (C_BaseEntity*)pEntList->GetClientEntity(pEngine->GetLocalPlayer());
+    for(int i = 0; i < pEntList->GetHighestEntityIndex(); i++) {
+        C_BaseEntity* pEntity = (C_BaseEntity*)pEntList->GetClientEntity(i);
+        if(!CheatSettings::ESP || !pEntity || !pLocal || pEntity->GetHealth() < 1 || pEntity->GetTeam() == pLocal->GetTeam() || pEntity->IsDormant() || pEntity->IsGhost() || pEntity == pLocal)
+            continue;
+
+        bBoxStyle players;
+        auto isVisible = TestTrace(pEntity, pLocal);
+
+        IEngineClient::player_info_t pInfo;
+        pEngine->GetPlayerInfo(i, &pInfo);
+        if(DrawPlayerBox(pEntity, players)) {
+            if(pEntity->GetTeam() == Terrorist) { // Draw box ESP on T
+                drawArea->AddRect(ImVec2(players.x, players.y), ImVec2(players.x + players.w, players.y + players.h), isVisible ? ImColor(255, 0, 0) : ImColor(0, 255, 0));
+            }
+            if(pEntity->GetTeam() == CounterTerrorist) { // Draw box ESP on CT
+                drawArea->AddRect(ImVec2(players.x, players.y), ImVec2(players.x + players.w, players.y + players.h), isVisible ? ImColor(0, 255, 0) : ImColor(0, 0, 255));
+            }
+            /* Draws health bar */
+            // DrawHealthbar(players.x - 5, players.y, 3, players.h, pEntity->GetHealth(), Color::Green());
+            /* Draws player name */
+            drawArea->AddText(ImVec2(((players.x + players.w) - ImGui::CalcTextSize(pInfo.name).x) / 2, players.y - 12), ImColor(255, 255, 255), pInfo.name);
+        }
     }
 }
