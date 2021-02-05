@@ -10,10 +10,10 @@
 #include "ValveSDK.h"
 #include "Visuals.hpp"
 #include "OpenGLHooker.hpp"
+#include "PatternScanner.hpp"
 
 HFONT eFont;
 typedef void(*tPaintTraverse)(void*, VPANEL, bool, bool);
-
 extern void hkPaintTraverse(void* thisptr, VPANEL vguiPanel, bool forceRepaint, bool allowForce);
 void hkPaintTraverse(void* thisptr, VPANEL vguiPanel, bool forceRepaint, bool allowForce) {
     paintVMT->GetOriginalMethod<tPaintTraverse>(42)(thisptr, vguiPanel, forceRepaint, allowForce);
@@ -30,20 +30,17 @@ void hkPaintTraverse(void* thisptr, VPANEL vguiPanel, bool forceRepaint, bool al
         Visuals::ESP::ESPSurface();
     }
 }
-typedef void(*tDrawModelExecute)(void* thisptr, void* context, void* state, ModelRenderInfo_t& model_info, matrix3x4_t* pCustomBoneToWorld);
 
+typedef void(*tDrawModelExecute)(void* thisptr, void* context, void* state, ModelRenderInfo_t& model_info, matrix3x4_t* pCustomBoneToWorld);
 extern void hkDrawModelExecute(void* thisptr, void* context, void* state, ModelRenderInfo_t& model_info, matrix3x4_t* pCustomBoneToWorld);
 void hkDrawModelExecute(void* thisptr, void* context, void* state, ModelRenderInfo_t& model_info, matrix3x4_t* pCustomBoneToWorld) {
-    if(SDLHook::_visible){
-        //DME IS SPOSED TO GIVE ME ISURFACE?
-        //pSurface->LockCursor(ISURFACE, edx);
-    }
+    //DME THINGS...
     dmeVMT->GetOriginalMethod<tDrawModelExecute>(21)(thisptr, context, state, model_info, pCustomBoneToWorld); //Get from my old source probably pasted.
     pModelRender->ForcedMaterialOverride(0);
 }
 
-typedef void(*tFrameStageNotify)(void* thisptr, FrameStage stage);
 
+typedef void(*tFrameStageNotify)(void* thisptr, FrameStage stage);
 extern void hkFrameStageNotify(void* thisptr, FrameStage stage);
 void hkFrameStageNotify(void* thisptr, FrameStage stage) {
     if (stage == FrameStage::RENDER_START) {
