@@ -3,7 +3,7 @@
 //  ButOSX
 //
 //  Created by Can on 29.10.2020.
-//  Copyright © 2020 VersteckteKrone. All rights reserved.
+//  Copyright © 2020 Lyceion. All rights reserved.
 //
 
 #ifndef MenuRenderer_hpp
@@ -11,10 +11,10 @@
 
 #include <stdio.h>
 
-#include "../../Thirdparty/imgui/imgui.h"
-#include "../../Thirdparty/imgui/backends/imgui_impl_sdl.h"
-#include "../../Thirdparty/imgui/backends/imgui_impl_opengl2.h"
-#include "../../Thirdparty/imgui/imgui_internal.h"
+#include "../../../Thirdparty/imgui/imgui.h"
+#include "../../../Thirdparty/imgui/backends/imgui_impl_sdl.h"
+#include "../../../Thirdparty/imgui/backends/imgui_impl_opengl2.h"
+#include "../../../Thirdparty/imgui/imgui_internal.h"
 
 #include "Design/CustomWidgets.hpp"
 

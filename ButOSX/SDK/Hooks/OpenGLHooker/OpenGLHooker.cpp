@@ -3,13 +3,13 @@
 //  ButOSX
 //
 //  Created by Can on 29.10.2020.
-//  Copyright © 2020 VersteckteKrone. All rights reserved.
+//  Copyright © 2020 Lyceion. All rights reserved.
 //
 
 #include "OpenGLHooker.hpp"
 #include "xorstr.h"
-#include "../../Menu/Datas.hpp"
-#include "../../Menu/MenuRenderer.hpp"
+#include "../../Menu/ImGuiMenu/Datas.hpp"
+#include "../../Menu/ImGuiMenu/MenuRenderer.hpp"
 #include "Visuals.hpp"
 
 Uint8 SDLCALL SDL_GameControllerGetButton(SDL_GameController *gamecontroller, SDL_GameControllerButton button){
@@ -290,18 +290,11 @@ void SDLHook::SwapWindow(SDL_Window* window) {
     if ( io.KeysDownDuration[73] == 0.0f )
         _visible = !_visible;
     
-    //Just... Doesn't work...
-//    if(_visible){
-//        pSurface->UnlockCursor();
-//    }
-//    else{
-//        pSurface->LockCursor();
-//    }
-    
-    static ImDrawList* BackDrawList = ImGui::GetBackgroundDrawList();
+    //static ImDrawList* BackDrawList = ImGui::GetBackgroundDrawList();
+    static ImDrawList* DrawList     = ImGui::GetOverlayDrawList();
     //OPENGL RENDERS
     // Visuals::ESP::EspImGui(BackDrawList); /* BETA */
-    Visuals::Others::Watermark(BackDrawList);
+    Visuals::Others::Watermark(DrawList);
     
     MenuRenderer::RenderMenu(_visible);
     oSDL_GL_SwapWindow(window);
